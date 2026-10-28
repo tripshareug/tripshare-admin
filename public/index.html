@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TripShare Admin</title>
+<style>
+  :root {
+    --blue: #1E6FD9;
+    --navy: #1E3A5F;
+    --green: #10B981;
+    --amber: #F59E0B;
+    --red: #DC2626;
+    --bg: #F8FAFB;
+    --card: #FFFFFF;
+    --border: #E5E7EB;
+    --text: #0F172A;
+    --muted: #64748B;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .login-wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--blue), var(--green));
+    padding: 20px;
+  }
+  .login-card {
+    background: white;
+    padding: 32px;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 380px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  }
+  .login-card h1 { margin: 0 0 4px; font-size: 22px; color: var(--navy); }
+  .login-card .sub { margin: 0 0 24px; color: var(--muted); font-size: 13px; }
+  .input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 14px;
+    margin-bottom: 12px;
+    font-family: inherit;
+  }
+  .input:focus { outline: none; border-color: var(--blue); }
+  .btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--blue);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn:hover { background: #1559b0; }
+  .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .btn-sm { padding: 6px 12px; font-size: 12px; width: auto; border-radius: 6px; }
+  .btn-green { background: var(--green); }
+  .btn-red { background: var(--red); }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+  .err {
+    background: #FEE2E2;
+    color: #991B1B;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+  .topbar {
+    background: var(--navy);
+    color: white;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .topbar h1 { margin: 0; font-size: 18px; font-weight: 700; }
+  .topbar .user { font-size: 13px; display: flex; align-items: center; gap: 12px; }
+  .layout { display: flex; min-height: calc(100vh - 60px); }
+  .sidebar {
+    width: 200px;
+    background: white;
+    border-right: 1px solid var(--border);
+    padding: 20px 0;
+  }
+  .nav-item {
+    display: block;
+    padding: 10px 24px;
+    color: var(--muted);
+    text-decoration: none;
+    font-weight: 500;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+  }
+  .nav-item:hover { background: var(--bg); }
+  .nav-item.active {
+    color: var(--blue);
+    background: rgba(30,111,217,0.05);
+    border-left-color: var(--blue);
+  }
+  .main { flex: 1; padding: 24px; overflow-x: auto; }
+  @media (max-width: 640px) {
+    .sidebar { width: 80px; }
+    .nav-item { padding: 10px 12px; font-size: 11px; text-align: center; }
+    .main { padding: 16px; }
+  }
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .metric {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .metric .num {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--blue);
+    line-height: 1;
+  }
+  .metric .lbl {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 6px;
+  }
+  .table-wrap {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 600px;
+  }
+  thead th {
+    background: #F8FAFB;
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: #F8FAFB; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .badge-green { background: rgba(16,185,129,0.12); color: var(--green); }
+  .badge-amber { background: rgba(245,158,11,0.15); color: var(--amber); }
+  .badge-red { background: rgba(220,38,38,0.12); color: var(--red); }
+  .badge-grey { background: rgba(100,116,139,0.12); color: var(--muted); }
+  .section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .section-head h2 { margin: 0; font-size: 18px; }
+  .loader {
+    text-align: center;
+    padding: 40px;
+    color: var(--muted);
+  }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div id="login" class="login-wrap">
+  <div class="login-card">
+    <h1>TripShare Admin</h1>
+    <p class="sub">Sign in with your admin account</p>
+    <div id="loginErr" class="err hidden"></div>
+    <input id="email" class="input" type="email" placeholder="Email" autocomplete="email">
+    <input id="password" class="input" type="password" placeholder="Password" autocomplete="current-password">
+    <button id="loginBtn" class="btn">Sign in</button>
+  </div>
+</div>
+
+<div id="dashboard" class="hidden">
+  <div class="topbar">
+    <h1>TripShare Admin</h1>
+    <div class="user">
+      <span id="userEmail"></span>
+      <button class="btn btn-sm btn-outline" style="color:white; border-color:rgba(255,255,255,0.3);" onclick="logout()">Log out</button>
+    </div>
+  </div>
+  <div class="layout">
+    <div class="sidebar">
+      <a class="nav-item active" data-view="metrics" onclick="switchView('metrics')">Dashboard</a>
+      <a class="nav-item" data-view="users" onclick="switchView('users')">Users</a>
+      <a class="nav-item" data-view="rides" onclick="switchView('rides')">Rides</a>
+      <a class="nav-item" data-view="bookings" onclick="switchView('bookings')">Bookings</a>
+    </div>
+    <div class="main">
+      <div id="view-metrics"></div>
+      <div id="view-users" class="hidden"></div>
+      <div id="view-rides" class="hidden"></div>
+      <div id="view-bookings" class="hidden"></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const SUPABASE_URL = "https://bsbusafkqacwamhythfj.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_Q6LoGG0_qfEY2xOpmHLokg_8s25rG6e";
+
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+
+$("loginBtn").addEventListener("click", async () => {
+  const email = $("email").value.trim();
+  const password = $("password").value;
+  const errBox = $("loginErr");
+  errBox.classList.add("hidden");
+  if (!email || !password) {
+    errBox.textContent = "Enter email + password";
+    errBox.classList.remove("hidden");
+    return;
+  }
+  $("loginBtn").disabled = true;
+  $("loginBtn").textContent = "Signing in...";
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  $("loginBtn").disabled = false;
+  $("loginBtn").textContent = "Sign in";
+  if (error) {
+    errBox.textContent = error.message;
+    errBox.classList.remove("hidden");
+    return;
+  }
+  await checkAdminAndShow();
+});
+
+async function checkAdminAndShow() {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return;
+  const { data: profile } = await sb.from("profiles").select("is_admin, full_name").eq("id", user.id).single();
+  if (!profile?.is_admin) {
+    await sb.auth.signOut();
+    $("loginErr").textContent = "This account is not an admin";
+    $("loginErr").classList.remove("hidden");
+    return;
+  }
+  $("login").classList.add("hidden");
+  $("dashboard").classList.remove("hidden");
+  $("userEmail").textContent = user.email;
+  loadMetrics();
+}
+
+window.logout = async () => {
+  await sb.auth.signOut();
+  location.reload();
+};
+
+window.switchView = (name) => {
+  document.querySelectorAll(".nav-item").forEach(e => e.classList.toggle("active", e.dataset.view === name));
+  ["metrics","users","rides","bookings"].forEach(v => {
+    $(`view-${v}`).classList.toggle("hidden", v !== name);
+  });
+  if (name === "metrics") loadMetrics();
+  if (name === "users") loadUsers();
+  if (name === "rides") loadRides();
+  if (name === "bookings") loadBookings();
+};
+
+async function loadMetrics() {
+  $("view-metrics").innerHTML = `<div class="loader">Loading metrics...</div>`;
+  const { data, error } = await sb.from("admin_dashboard_metrics").select().single();
+  if (error) {
+    $("view-metrics").innerHTML = `<div class="err">${esc(error.message)}</div>`;
+    return;
+  }
+  $("view-metrics").innerHTML = `
+    <div class="section-head"><h2>Overview</h2></div>
+    <div class="metric-grid">
+      <div class="metric"><div class="num">${data.total_users}</div><div class="lbl">Total Users</div></div>
+      <div class="metric"><div class="num">${data.total_drivers}</div><div class="lbl">Drivers</div></div>
+      <div class="metric"><div class="num">${data.verified_drivers}</div><div class="lbl">Verified</div></div>
+      <div class="metric"><div class="num">${data.pending_verifications}</div><div class="lbl">Pending Verification</div></div>
+      <div class="metric"><div class="num">${data.total_rides}</div><div class="lbl">Total Rides</div></div>
+      <div class="metric"><div class="num">${data.rides_last_7_days}</div><div class="lbl">Rides (7d)</div></div>
+      <div class="metric"><div class="num">${data.total_bookings}</div><div class="lbl">Total Bookings</div></div>
+      <div class="metric"><div class="num">${data.pending_bookings}</div><div class="lbl">Pending</div></div>
+      <div class="metric"><div class="num">${data.accepted_bookings}</div><div class="lbl">Accepted</div></div>
+      <div class="metric"><div class="num">UGX ${Number(data.total_wallet_ugx).toLocaleString()}</div><div class="lbl">Wallet Balance</div></div>
+    </div>
+  `;
+}
+
+async function loadUsers() {
+  $("view-users").innerHTML = `<div class="loader">Loading users...</div>`;
+  const { data, error } = await sb.from("profiles").select("id, full_name, phone, role, verification_status, is_admin, created_at").order("created_at", { ascending: false });
+  if (error) {
+    $("view-users").innerHTML = `<div class="err">${esc(error.message)}</div>`;
+    return;
+  }
+  const rows = data.map(u => {
+    const verBadge =
+      u.verification_status === "verified" ? `<span class="badge badge-green">Verified</span>` :
+      u.verification_status === "pending" ? `<span class="badge badge-amber">Pending</span>` :
+      `<span class="badge badge-grey">Unverified</span>`;
+    return `
+      <tr>
+        <td>${esc(u.full_name ?? "—")}${u.is_admin ? ' <span class="badge badge-red">ADMIN</span>' : ''}</td>
+        <td>${esc(u.phone ?? "—")}</td>
+        <td>${esc(u.role ?? "—")}</td>
+        <td>${verBadge}</td>
+        <td>${new Date(u.created_at).toLocaleDateString()}</td>
+        <td>
+          ${u.verification_status === "verified"
+            ? `<button class="btn btn-sm btn-outline" onclick="setVerification('${u.id}','unverified')">Un-verify</button>`
+            : `<button class="btn btn-sm btn-green" onclick="setVerification('${u.id}','verified')">Verify</button>`}
+        </td>
+      </tr>
+    `;
+  }).join("");
+  $("view-users").innerHTML = `
+    <div class="section-head"><h2>Users (${data.length})</h2></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Name</th><th>Phone</th><th>Role</th><th>Verification</th><th>Joined</th><th>Action</th></tr></thead>
+        <tbody>${rows || `<tr><td colspan="6" style="text-align:center; color:var(--muted); padding: 30px;">No users yet</td></tr>`}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+window.setVerification = async (userId, status) => {
+  if (!confirm(`Set verification to "${status}"?`)) return;
+  const { error } = await sb.from("profiles").update({ verification_status: status }).eq("id", userId);
+  if (error) { alert("Error: " + error.message); return; }
+  loadUsers();
+};
+
+async function loadRides() {
+  $("view-rides").innerHTML = `<div class="loader">Loading rides...</div>`;
+  const { data, error } = await sb.from("rides").select("id, origin_city, destination_city, departure_time, price_per_seat, seats_remaining, status, profiles!rides_driver_id_fkey(full_name)").order("departure_time", { ascending: false }).limit(100);
+  if (error) {
+    $("view-rides").innerHTML = `<div class="err">${esc(error.message)}</div>`;
+    return;
+  }
+  const rows = data.map(r => `
+    <tr>
+      <td>${esc(r.profiles?.full_name ?? "—")}</td>
+      <td>${esc(r.origin_city)} → ${esc(r.destination_city)}</td>
+      <td>${new Date(r.departure_time).toLocaleString()}</td>
+      <td>UGX ${Number(r.price_per_seat).toLocaleString()}</td>
+      <td>${r.seats_remaining}</td>
+      <td><span class="badge badge-grey">${esc(r.status)}</span></td>
+      <td><button class="btn btn-sm btn-red" onclick="deleteRide('${r.id}')">Delete</button></td>
+    </tr>
+  `).join("");
+  $("view-rides").innerHTML = `
+    <div class="section-head"><h2>Rides (${data.length})</h2></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Driver</th><th>Route</th><th>Departure</th><th>Price</th><th>Seats left</th><th>Status</th><th></th></tr></thead>
+        <tbody>${rows || `<tr><td colspan="7" style="text-align:center; color:var(--muted); padding:30px;">No rides yet</td></tr>`}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+window.deleteRide = async (id) => {
+  if (!confirm("Delete this ride? This cannot be undone.")) return;
+  const { error } = await sb.from("rides").delete().eq("id", id);
+  if (error) { alert("Error: " + error.message); return; }
+  loadRides();
+};
+
+async function loadBookings() {
+  $("view-bookings").innerHTML = `<div class="loader">Loading bookings...</div>`;
+  const { data, error } = await sb.from("bookings").select("id, seats_booked, total_price, status, driver_response, created_at, rides(origin_city, destination_city), profiles!bookings_rider_id_fkey(full_name)").order("created_at", { ascending: false }).limit(100);
+  if (error) {
+    $("view-bookings").innerHTML = `<div class="err">${esc(error.message)}</div>`;
+    return;
+  }
+  const rows = data.map(b => {
+    const badge =
+      b.status === "accepted" ? `<span class="badge badge-green">${esc(b.status)}</span>` :
+      b.status === "pending" ? `<span class="badge badge-amber">${esc(b.status)}</span>` :
+      b.status === "declined" || b.status === "cancelled" ? `<span class="badge badge-red">${esc(b.status)}</span>` :
+      `<span class="badge badge-grey">${esc(b.status)}</span>`;
+    return `
+      <tr>
+        <td>${esc(b.profiles?.full_name ?? "—")}</td>
+        <td>${esc(b.rides?.origin_city ?? "?")} → ${esc(b.rides?.destination_city ?? "?")}</td>
+        <td>${b.seats_booked}</td>
+        <td>UGX ${Number(b.total_price).toLocaleString()}</td>
+        <td>${badge}</td>
+        <td>${new Date(b.created_at).toLocaleDateString()}</td>
+      </tr>
+    `;
+  }).join("");
+  $("view-bookings").innerHTML = `
+    <div class="section-head"><h2>Bookings (${data.length})</h2></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Rider</th><th>Route</th><th>Seats</th><th>Price</th><th>Status</th><th>Created</th></tr></thead>
+        <tbody>${rows || `<tr><td colspan="6" style="text-align:center; color:var(--muted); padding:30px;">No bookings yet</td></tr>`}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) await checkAdminAndShow();
+})();
+</script>
+</body>
+</html>
